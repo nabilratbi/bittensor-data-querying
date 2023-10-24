@@ -57,8 +57,35 @@ for run in runs:
 # Concatenate the data frames in the list
 combined_df = pd.concat(data_frames)
 
-# Assuming you have a DataFrame named 'df'
-data = combined_df.to_dict(orient='records')
+for index, row in combined_df.iterrows():
+    timestamp = row['_timestamp']
+    existing_doc = collection.find_one({'_timestamp': timestamp})
 
-# Insert data into the collection
-collection.insert_many(data)
+    if existing_doc:
+        # Document with the same _timestamp already exists
+        # You can choose to skip it or update it here
+        pass
+    else:
+        # Document with _timestamp doesn't exist, insert it
+        document_to_insert = {
+            '_timestamp': timestamp,
+            'neuron_weights': row['neuron_weights'],
+            'neuron_hotkeys': row['neuron_hotkeys'],
+            'rewards': row['rewards'],
+            'prompt': row['prompt'],
+            'best': row['best'], 
+            'Date': row['Date'],
+            'run_id': row['run_id']
+
+            # Add other fields as needed
+        }
+        collection.insert_one(document_to_insert)
+
+# Close the MongoDB connection
+client.close()
+
+# # Assuming you have a DataFrame named 'df'
+# data = combined_df.to_dict(orient='records')
+
+# # Insert data into the collection
+# collection.insert_many(data)
